@@ -1,23 +1,3 @@
-# syntax=docker/dockerfile:1
-
-FROM node:24-bookworm-slim AS base
-
-ENV PNPM_HOME=/pnpm
-ENV PATH=$PNPM_HOME:$PATH
-ENV HUSKY=0
-
-RUN corepack enable
-
-FROM base AS dependencies
-
-WORKDIR /app
-
-COPY package.json pnpm-lock.yaml ./
-COPY scripts/sync-omc-directives.mjs ./scripts/sync-omc-directives.mjs
-
-RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    pnpm install --frozen-lockfile
-
 FROM base AS builder
 
 WORKDIR /app
@@ -28,7 +8,12 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN --mount=type=secret,id=app_env,target=/app/.env.production \
-    pnpm build
+    pnpm build \
+    && find /app/.next/standalone \
+        -maxdepth 1 \
+        -type f \
+        -name '.env*' \
+        -delete
 
 FROM node:24-bookworm-slim AS runner
 
@@ -46,8 +31,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+RUN test -z "$(find /app -maxdepth 2 -type f -name '.env*' -print -quit)"
+
 USER nextjs
-
-EXPOSE 3000
-
-CMD ["node", "server.js"]
