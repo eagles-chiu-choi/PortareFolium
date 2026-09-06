@@ -51,4 +51,21 @@ describe("migration integrity", () => {
             expect(wholeMigrationSql).toContain(structure);
         }
     });
+
+    it("keeps job_field columns compatible with array containment queries", () => {
+        const setupSql = readFileSync(
+            join(repoRoot, "supabase", "setup.sql"),
+            "utf8"
+        );
+        const jobFieldMigrationSql = readFileSync(
+            join(migrationDir, "029_v0_12_235_job_field_arrays.sql"),
+            "utf8"
+        );
+
+        expect(setupSql.match(/job_field\s+TEXT\[\]/gu)).toHaveLength(3);
+        expect(jobFieldMigrationSql).toContain(
+            "ALTER COLUMN job_field TYPE TEXT[]"
+        );
+        expect(jobFieldMigrationSql).toContain("ELSE ARRAY[job_field]");
+    });
 });

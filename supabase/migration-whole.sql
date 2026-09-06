@@ -40,11 +40,46 @@ ALTER TABLE posts
     ADD COLUMN IF NOT EXISTS og_image         TEXT,
     ADD COLUMN IF NOT EXISTS category         TEXT,
     ADD COLUMN IF NOT EXISTS thumbnail        TEXT,
-    ADD COLUMN IF NOT EXISTS job_field        TEXT;
+    ADD COLUMN IF NOT EXISTS job_field        TEXT[];
 
 ALTER TABLE portfolio_items
     ADD COLUMN IF NOT EXISTS thumbnail TEXT,
-    ADD COLUMN IF NOT EXISTS job_field TEXT;
+    ADD COLUMN IF NOT EXISTS job_field TEXT[];
+
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'posts'
+          AND column_name = 'job_field'
+          AND data_type = 'text'
+    ) THEN
+        ALTER TABLE public.posts
+            ALTER COLUMN job_field TYPE TEXT[]
+            USING CASE
+                WHEN job_field IS NULL THEN NULL
+                ELSE ARRAY[job_field]
+            END;
+    END IF;
+
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'portfolio_items'
+          AND column_name = 'job_field'
+          AND data_type = 'text'
+    ) THEN
+        ALTER TABLE public.portfolio_items
+            ALTER COLUMN job_field TYPE TEXT[]
+            USING CASE
+                WHEN job_field IS NULL THEN NULL
+                ELSE ARRAY[job_field]
+            END;
+    END IF;
+END $$;
 
 -- ── books 테이블 ──────────────────────────────────────────────
 
@@ -652,5 +687,5 @@ WHERE key = 'job_field';
 -- ── DB schema version ───────────────────────────────────────
 
 INSERT INTO site_config (key, value)
-VALUES ('db_schema_version', '"0.12.190"')
-ON CONFLICT (key) DO UPDATE SET value = '"0.12.190"';
+VALUES ('db_schema_version', '"0.12.235"')
+ON CONFLICT (key) DO UPDATE SET value = '"0.12.235"';

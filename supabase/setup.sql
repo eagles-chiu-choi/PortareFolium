@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS posts (
     pub_date         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     category         TEXT,
     tags             TEXT[]      NOT NULL DEFAULT '{}',
-    job_field        TEXT,
+    job_field        TEXT[],
     thumbnail        TEXT,
     content          TEXT        NOT NULL DEFAULT '',
     published        BOOLEAN     NOT NULL DEFAULT FALSE,
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS portfolio_items (
     title            TEXT        NOT NULL,
     description      TEXT,
     tags             TEXT[]      NOT NULL DEFAULT '{}',
-    job_field        TEXT,
+    job_field        TEXT[],
     thumbnail        TEXT,
     content          TEXT        NOT NULL DEFAULT '',
     data             JSONB       NOT NULL DEFAULT '{}',
@@ -619,5 +619,5 @@ INSERT INTO site_config (key, value) VALUES
     ('seo_config',         '{"default_title":"PortareFolium","default_description":"포트폴리오 & 기술 블로그","default_og_image":""}'),
     ('resume_layout',      '"modern"'),
     -- 신규 설치: setup.sql이 최신 스키마를 적용하므로 현재 버전으로 초기화
-    ('db_schema_version',  '"0.12.190"')
+    ('db_schema_version',  '"0.12.235"')
 ON CONFLICT (key) DO NOTHING;
