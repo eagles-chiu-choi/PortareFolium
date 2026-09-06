@@ -333,7 +333,7 @@ describe("post content size and chunk save safeguards", () => {
         resetDb();
     });
 
-    it("keeps the Server Actions body size limit at the changelog-required 4MB", () => {
+    it("keeps the Server Actions body size limit large enough for Portfolio content", () => {
         expect(
             (
                 nextConfig as {
@@ -342,7 +342,7 @@ describe("post content size and chunk save safeguards", () => {
                     };
                 }
             ).experimental?.serverActions?.bodySizeLimit
-        ).toBe("4mb");
+        ).toBe("64mb");
     });
 
     it("saves large post content through chunks without overwriting existing inline content before commit", async () => {
